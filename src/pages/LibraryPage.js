@@ -17,7 +17,7 @@ export default class LibraryPage extends React.Component {
 
   render(){
     const { shelves } = this.state;
-    debugger;
+
     return(
       <div className="list-books">
         <div className="list-books-title">
@@ -44,12 +44,15 @@ export default class LibraryPage extends React.Component {
 
           this.setState((currentState) => {
             let shelves = currentState.shelves;
-            Object.keys(data).map(key => {
+            let newShelves = {};
+            Object.keys(data).forEach(key => {
               let bookIds = data[key];
-              shelves[key] = shelves[key].filter(s => bookIds.includes(s.id));
+              newShelves[key] = bookIds.map(bid => (
+                  Object.values(shelves).flat().find(book => book.id === bid)
+              ));
             });
 
-            return { shelves };
+            return { shelves: newShelves };
           });
 
       });

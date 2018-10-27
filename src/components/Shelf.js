@@ -1,6 +1,5 @@
 import React from 'react';
 
-import * as BooksAPI from '../BooksAPI';
 import Book from './Book';
 
 export default class Shelf extends React.Component {
@@ -15,7 +14,7 @@ export default class Shelf extends React.Component {
           <ol className="books-grid">
             {books.map(book => (
               <li key={book.id}>
-                <Book book={book} onChangeShelf={onChangeShelf} />
+                <Book book={book} shelf={book.shelf} onChangeShelf={onChangeShelf} />
               </li>
             ))}
           </ol>
