@@ -27,7 +27,7 @@ export default class LibraryPage extends React.Component {
           <div>
 
             { Object.keys(shelves).map(key => (
-              <Shelf key={key} title={key} books={shelves[key]} onChangeShelf={this.onChangeShelf}/>
+              <Shelf key={key} id={key} books={shelves[key]} onChangeShelf={this.onChangeShelf}/>
             ))}
 
           </div>
