@@ -5,7 +5,7 @@ import Book from './Book';
 export default class Shelf extends React.Component {
 
   render() {
-    const { id, books, onChangeShelf } = this.props;
+    const { id, books, onUpdateBook } = this.props;
     const title = id.replace(/([a-z](?=[A-Z]))/g, '$1 ');
 
     return (
@@ -15,7 +15,7 @@ export default class Shelf extends React.Component {
           <ol className="books-grid">
             {books.map(book => (
               <li key={book.id}>
-                <Book book={book} shelf={book.shelf} onChangeShelf={onChangeShelf} />
+                <Book book={book} shelf={book.shelf} onUpdateBook={onUpdateBook} />
               </li>
             ))}
           </ol>

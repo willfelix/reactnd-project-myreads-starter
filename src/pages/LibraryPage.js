@@ -6,18 +6,19 @@ import Shelf from '../components/Shelf';
 export default class LibraryPage extends React.Component {
 
   render(){
-    const { shelves, onChangeShelf } = this.props;
-    
+    const { shelves, onUpdateBook } = this.props;
+
     return(
       <div className="list-books">
         <div className="list-books-title">
           <h1>MyReads</h1>
+          <h4>Ninja Edition</h4>
         </div>
         <div className="list-books-content">
           <div>
 
             { Object.keys(shelves).map(key => (
-              <Shelf key={key} id={key} books={shelves[key]} onChangeShelf={onChangeShelf}/>
+              <Shelf key={key} id={key} books={shelves[key]} onUpdateBook={onUpdateBook}/>
             ))}
 
           </div>

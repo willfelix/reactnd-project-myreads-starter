@@ -26,32 +26,24 @@ export default class BooksApp extends React.Component {
       <div className="app">
         { isLoading && <Loader /> }
 
-        <Route exact path="/" render={() => <LibraryPage shelves={shelves} onChangeShelf={this.onChangeShelf} />} />
-        <Route path="/search" render={() => <SearchPage bookIds={books.map(b => b.id)} onAddBook={this.onAddBook} />} />
+        <Route exact path="/" render={() => <LibraryPage shelves={shelves} onUpdateBook={this.onUpdateBook} />} />
+        <Route path="/search" render={() => <SearchPage books={books} onUpdateBook={this.onUpdateBook} />} />
       </div>
     );
   }
 
-  onChangeShelf = (book, shelfId) => {
-      this.setState({ isLoading: true });
+  onUpdateBook = (book, shelfId) => {
       BooksAPI.update(book, shelfId).then(data => {
 
-          this.setState((currentState) => {
-            let shelves = currentState.shelves;
-            let newShelves = this.filterBooks(data, shelves);
-            return { shelves: newShelves, isLoading: false };
-          });
-
-      });
-  };
-
-  onAddBook = (book, shelfId) => {
-      this.setState({ isLoading: true });
-      BooksAPI.update(book, shelfId).then(data => {
-
+          book.shelf = shelfId;
           this.setState((currentState) => {
               let shelves = currentState.shelves;
-              shelves[shelfId].push(book);
+
+              // if user add a book from search page
+              if (shelfId !== "none") {
+                  shelves[shelfId].push(book);
+              }
+
               let newShelves = this.filterBooks(data, shelves);
               return { shelves: newShelves, isLoading: false };
           });
@@ -62,9 +54,9 @@ export default class BooksApp extends React.Component {
   groupBy = (list, key) => {
       const map = new Map();
       list.forEach(item => {
-        const value = item[key];
-        const collection = map.get(value);
-        !collection ? map.set(value, [ item ]) : collection.push(item);
+          const value = item[key];
+          const collection = map.get(value);
+          !collection ? map.set(value, [ item ]) : collection.push(item);
       });
 
       let shelves = {};
@@ -73,9 +65,12 @@ export default class BooksApp extends React.Component {
   }
 
   filterBooks = (shelvesFromAPI, shelvesFromState) => {
-      const allBooks = Object.values(shelvesFromState).flat();
       let shelves = {};
+      const allBooks = Object.values(shelvesFromState).flat();
+
       Object.keys(shelvesFromAPI).forEach(key => {
+
+        // get every book returned by the API and populates each shelf
         let bookIds = shelvesFromAPI[key];
         shelves[key] = bookIds.map(bookId => {
             let book = allBooks.find(book => book.id === bookId);
@@ -83,8 +78,6 @@ export default class BooksApp extends React.Component {
             return book;
         });
 
-        // remove undefined elements from array
-        shelves[key] = shelves[key].filter(s => s);
       });
 
       return shelves;

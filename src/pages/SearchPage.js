@@ -11,10 +11,8 @@ export default class SearchPage extends React.Component {
   state = { results: [], isLoading: false, isEmpty: false, query: '' };
 
   render() {
+    const { onUpdateBook } = this.props;
     let { results, isLoading, isEmpty, query } = this.state;
-    const { bookIds, onAddBook } = this.props;
-
-    results = results.filter(b => !bookIds.includes(b.id));
 
     return(
       <div className="search-books">
@@ -26,18 +24,21 @@ export default class SearchPage extends React.Component {
         </div>
         <div className="search-books-results">
 
-          { isLoading && <Loader /> }
+          { isLoading ? ( <Loader /> ) : (
 
-          <ol className="books-grid">
-            {isEmpty && (
-              <li>Sorry, we couldn't find any results matching "<i>{query}</i>"</li>
-            )}
-            {results.map(book => (
-              <li key={book.id}>
-                <Book book={book} shelf='none' onChangeShelf={onAddBook} />
-              </li>
-            ))}
-          </ol>
+            <ol className="books-grid">
+                {isEmpty && (
+                  <li>Sorry, we couldn't find any results matching "<i>{query}</i>"</li>
+                )}
+                {results.map(book => (
+                  <li key={book.id}>
+                    <Book book={book} onUpdateBook={onUpdateBook} />
+                  </li>
+                ))}
+            </ol>
+
+          ) }
+
         </div>
       </div>
     );
@@ -45,25 +46,35 @@ export default class SearchPage extends React.Component {
   }
 
   search = (e) => {
+    const { books } = this.props;
     let query = e.target.value;
+
+    this.delay(() => {
+        BooksAPI.search(query).then(results => {
+          let isEmpty = false;
+          if (!results || results.error) {
+             results = [];
+             isEmpty = true;
+          }
+
+          results.forEach(r => {
+              r.shelf = 'none';
+              let book = books.find(book => r.id === book.id);
+              if (book) r.shelf = book.shelf;
+          });
+
+          this.setState({ results, isLoading: false, isEmpty, query });
+        });
+    });
+  };
+
+  delay = (searchCallback) => {
     if (this.timer) {
-      clearTimeout(this.timer);
+        clearTimeout(this.timer);
     }
 
     this.setState({ isLoading: true });
-    this.timer = setTimeout(() => {
-
-      BooksAPI.search(query).then(results => {
-        let isEmpty = false;
-        if (!results || results.error) {
-           results = [];
-           isEmpty = true;
-        }
-
-        this.setState({ results, isLoading: false, isEmpty, query });
-      });
-
-    }, 1000);
+    this.timer = setTimeout(searchCallback, 1000);
   };
 
 }
