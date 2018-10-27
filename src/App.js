@@ -1,79 +1,92 @@
 import React from 'react';
 import { Route } from 'react-router-dom';
-import './App.css';
+import './stylesheets/App.css';
 
+import * as BooksAPI from './BooksAPI';
+import Loader from './components/Loader';
 import LibraryPage from './pages/LibraryPage';
 import SearchPage from './pages/SearchPage';
 
 export default class BooksApp extends React.Component {
 
-  books = {
-    reading: [
-      {
-        title: "To Kill a Mockingbird",
-        author: "Harper Lee",
-        width: 128,
-        height: 193,
-        image: "http://books.google.com/books/content?id=PGR2AwAAQBAJ&printsec=frontcover&img=1&zoom=1&imgtk=AFLRE73-GnPVEyb7MOCxDzOYF1PTQRuf6nCss9LMNOSWBpxBrz8Pm2_mFtWMMg_Y1dx92HT7cUoQBeSWjs3oEztBVhUeDFQX6-tWlWz1-feexS0mlJPjotcwFqAg6hBYDXuK_bkyHD-y&source=gbs_api"
-      },
-      {
-        title: "Ender's Game",
-        author: "Orson Scott Card",
-        width: 128,
-        height: 188,
-        image: "http://books.google.com/books/content?id=yDtCuFHXbAYC&printsec=frontcover&img=1&zoom=1&imgtk=AFLRE72RRiTR6U5OUg3IY_LpHTL2NztVWAuZYNFE8dUuC0VlYabeyegLzpAnDPeWxE6RHi0C2ehrR9Gv20LH2dtjpbcUcs8YnH5VCCAH0Y2ICaKOTvrZTCObQbsfp4UbDqQyGISCZfGN&source=gbs_api"
-      }
-    ],
-    to_read: [
-      {
-        title: "1776",
-        author: "David McCullough",
-        width: 128,
-        height: 193,
-        image: "http://books.google.com/books/content?id=uu1mC6zWNTwC&printsec=frontcover&img=1&zoom=1&imgtk=AFLRE73pGHfBNSsJG9Y8kRBpmLUft9O4BfItHioHolWNKOdLavw-SLcXADy3CPAfJ0_qMb18RmCa7Ds1cTdpM3dxAGJs8zfCfm8c6ggBIjzKT7XR5FIB53HHOhnsT7a0Cc-PpneWq9zX&source=gbs_api"
-      },
-      {
-        title: "Harry Potter and the Sorcerer's Stone",
-        author: "J.K. Rowling",
-        width: 128,
-        height: 192,
-        image: "http://books.google.com/books/content?id=wrOQLV6xB-wC&printsec=frontcover&img=1&zoom=1&imgtk=AFLRE72G3gA5A-Ka8XjOZGDFLAoUeMQBqZ9y-LCspZ2dzJTugcOcJ4C7FP0tDA8s1h9f480ISXuvYhA_ZpdvRArUL-mZyD4WW7CHyEqHYq9D3kGnrZCNiqxSRhry8TiFDCMWP61ujflB&source=gbs_api"
-      }
-    ],
-    read: [
-      {
-        title: "The Hobbit",
-        author: "J.R.R. Tolkien",
-        width: 128,
-        height: 192,
-        image: "http://books.google.com/books/content?id=pD6arNyKyi8C&printsec=frontcover&img=1&zoom=1&imgtk=AFLRE70Rw0CCwNZh0SsYpQTkMbvz23npqWeUoJvVbi_gXla2m2ie_ReMWPl0xoU8Quy9fk0Zhb3szmwe8cTe4k7DAbfQ45FEzr9T7Lk0XhVpEPBvwUAztOBJ6Y0QPZylo4VbB7K5iRSk&source=gbs_api"
-      },
-      {
-        title: "Oh, the Places You'll Go!",
-        author: "Seuss",
-        width: 128,
-        height: 174,
-        image: "http://books.google.com/books/content?id=1q_xAwAAQBAJ&printsec=frontcover&img=1&zoom=1&imgtk=AFLRE712CA0cBYP8VKbEcIVEuFJRdX1k30rjLM29Y-dw_qU1urEZ2cQ42La3Jkw6KmzMmXIoLTr50SWTpw6VOGq1leINsnTdLc_S5a5sn9Hao2t5YT7Ax1RqtQDiPNHIyXP46Rrw3aL8&source=gbs_api"
-      },
-      {
-        title: "The Adventures of Tom Sawyer",
-        author: "Mark Twain",
-        width: 128,
-        height: 192,
-        image: "http://books.google.com/books/content?id=32haAAAAMAAJ&printsec=frontcover&img=1&zoom=1&imgtk=AFLRE72yckZ5f5bDFVIf7BGPbjA0KYYtlQ__nWB-hI_YZmZ-fScYwFy4O_fWOcPwf-pgv3pPQNJP_sT5J_xOUciD8WaKmevh1rUR-1jk7g1aCD_KeJaOpjVu0cm_11BBIUXdxbFkVMdi&source=gbs_api"
-      }
-    ]
+  state = { shelves: {}, isLoading: true };
+
+  componentDidMount() {
+    BooksAPI.getAll().then(data => {
+      let shelves = this.groupBy(data, 'shelf');
+      this.setState({ shelves, isLoading: false });
+    });
   }
 
   render() {
+    const { shelves, isLoading } = this.state;
+    const books = Object.values(shelves).flat();
+
     return (
       <div className="app">
-        <Route exact path="/" render={() => (
-            <LibraryPage books={this.books} />
-        )} />
+        { isLoading && <Loader /> }
 
-        <Route path="/search" component={SearchPage} />
+        <Route exact path="/" render={() => <LibraryPage shelves={shelves} onChangeShelf={this.onChangeShelf} />} />
+        <Route path="/search" render={() => <SearchPage bookIds={books.map(b => b.id)} onAddBook={this.onAddBook} />} />
       </div>
-    )
+    );
   }
+
+  onChangeShelf = (book, shelfId) => {
+      this.setState({ isLoading: true });
+      BooksAPI.update(book, shelfId).then(data => {
+
+          this.setState((currentState) => {
+            let shelves = currentState.shelves;
+            let newShelves = this.filterBooks(data, shelves);
+            return { shelves: newShelves, isLoading: false };
+          });
+
+      });
+  };
+
+  onAddBook = (book, shelfId) => {
+      this.setState({ isLoading: true });
+      BooksAPI.update(book, shelfId).then(data => {
+
+          this.setState((currentState) => {
+              let shelves = currentState.shelves;
+              shelves[shelfId].push(book);
+              let newShelves = this.filterBooks(data, shelves);
+              return { shelves: newShelves, isLoading: false };
+          });
+
+      });
+  };
+
+  groupBy = (list, key) => {
+      const map = new Map();
+      list.forEach(item => {
+        const value = item[key];
+        const collection = map.get(value);
+        !collection ? map.set(value, [ item ]) : collection.push(item);
+      });
+
+      let shelves = {};
+      map.forEach((values, key) => shelves[key] = values);
+      return shelves;
+  }
+
+  filterBooks = (shelvesFromAPI, shelvesFromState) => {
+      const allBooks = Object.values(shelvesFromState).flat();
+      let shelves = {};
+      Object.keys(shelvesFromAPI).forEach(key => {
+        let bookIds = shelvesFromAPI[key];
+        shelves[key] = bookIds.map(bookId => {
+            let book = allBooks.find(book => book.id === bookId);
+            book.shelf = key;
+            return book;
+        });
+
+        // remove undefined elements from array
+        shelves[key] = shelves[key].filter(s => s);
+      });
+
+      return shelves;
+  };
 }

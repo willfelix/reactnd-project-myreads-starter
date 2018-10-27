@@ -2,32 +2,39 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 import * as BooksAPI from '../BooksAPI';
+import Loader from '../components/Loader';
 import Book from '../components/Book';
 
 export default class SearchPage extends React.Component {
 
   timer = null;
-  idle = true;
-
-  state = { books: [] };
+  state = { results: [], isLoading: false, isEmpty: false, query: '' };
 
   render() {
-    const { onChangeShelf } = this.props;
-    const { books } = this.state;
+    let { results, isLoading, isEmpty, query } = this.state;
+    const { bookIds, onAddBook } = this.props;
+
+    results = results.filter(b => !bookIds.includes(b.id));
 
     return(
       <div className="search-books">
         <div className="search-books-bar">
           <Link className="close-search" to="/">Close</Link>
           <div className="search-books-input-wrapper">
-            <input type="text" placeholder="Search by title or author" onKeyUp={this.search} />
+            <input type="text" placeholder="Search by title or author" onChange={this.search} />
           </div>
         </div>
         <div className="search-books-results">
+
+          { isLoading && <Loader /> }
+
           <ol className="books-grid">
-            {books.map(book => (
+            {isEmpty && (
+              <li>Sorry, we couldn't find any results matching "<i>{query}</i>"</li>
+            )}
+            {results.map(book => (
               <li key={book.id}>
-                <Book book={book} shelf='none' onChangeShelf={onChangeShelf} />
+                <Book book={book} shelf='none' onChangeShelf={onAddBook} />
               </li>
             ))}
           </ol>
@@ -38,17 +45,25 @@ export default class SearchPage extends React.Component {
   }
 
   search = (e) => {
-    if (this.idle) {
-        this.idle = false;
-        this.timer = setTimeout(() => this.idle = true, 1000);
-
-        BooksAPI.search(e.target.value).then(books => {
-          this.setState({ books });
-
-          this.idle = true;
-          clearTimeout(this.timer);
-        });
+    let query = e.target.value;
+    if (this.timer) {
+      clearTimeout(this.timer);
     }
+
+    this.setState({ isLoading: true });
+    this.timer = setTimeout(() => {
+
+      BooksAPI.search(query).then(results => {
+        let isEmpty = false;
+        if (!results || results.error) {
+           results = [];
+           isEmpty = true;
+        }
+
+        this.setState({ results, isLoading: false, isEmpty, query });
+      });
+
+    }, 1000);
   };
 
 }

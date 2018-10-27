@@ -8,9 +8,9 @@ export default class Book extends React.Component {
     return (
         <div className="book">
             <div className="book-top">
-              <img src={book.imageLinks.smallThumbnail} alt={book.title}/>
+              <img src={book.imageLinks ? book.imageLinks.smallThumbnail : ''} alt={book.title}/>
               <div className="book-shelf-changer">
-                <select value={shelf} onChange={e => onChangeShelf(book.id, e.target.value)}>
+                <select value={shelf} onChange={e => onChangeShelf(book, e.target.value)}>
                   <option value="move" disabled>Move to...</option>
                   <option value="currentlyReading">Currently Reading</option>
                   <option value="wantToRead">Want to Read</option>
