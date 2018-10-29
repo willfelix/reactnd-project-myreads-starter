@@ -3,10 +3,8 @@ import { Link } from 'react-router-dom';
 
 import Shelf from '../components/Shelf';
 
-export default class LibraryPage extends React.Component {
-
-  render(){
-    const { shelves, onUpdateBook } = this.props;
+const LibraryPage = (props) => {
+    const { shelves, onUpdateBook } = props;
 
     return(
       <div className="list-books">
@@ -28,6 +26,6 @@ export default class LibraryPage extends React.Component {
         </div>
       </div>
     );
-  }
+};
 
-}
+export default LibraryPage;

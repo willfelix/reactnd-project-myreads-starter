@@ -1,12 +1,10 @@
 import React from 'react';
 import '../stylesheets/Loader.css'
 
-export default class Loader extends React.Component {
-
-  render() {
-    return (
-      <div className="loading"></div>
+const Loader = (props) => {
+	return (
+    	<div className="loading"></div>
     );
-  }
+};
 
-}
+export default Loader;

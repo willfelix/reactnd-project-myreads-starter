@@ -1,11 +1,10 @@
 import React from 'react';
 
-export default class Book extends React.Component {
-
-  render() {
-    let { book, onUpdateBook } = this.props;
+const Book = (props) => {
+    let { book, onUpdateBook } = props;
 
     return (
+
         <div className="book">
             <div className="book-top">
               <img src={book.imageLinks ? book.imageLinks.smallThumbnail : '/placeholder.jpg'} alt={book.title} width="120" height="170" />
@@ -22,7 +21,9 @@ export default class Book extends React.Component {
             <div className="book-title">{book.title}</div>
             <div className="book-authors">{ book.authors ? book.authors.join(", ") : '' }</div>
         </div>
-    );
-  }
 
-}
+    );
+    
+};
+
+export default Book;

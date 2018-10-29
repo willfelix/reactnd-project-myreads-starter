@@ -1,11 +1,8 @@
 import React from 'react';
-
 import Book from './Book';
 
-export default class Shelf extends React.Component {
-
-  render() {
-    const { id, books, onUpdateBook } = this.props;
+const Shelf = (props) => {
+    const { id, books, onUpdateBook } = props;
     const title = id.replace(/([a-z](?=[A-Z]))/g, '$1 ');
 
     return (
@@ -22,6 +19,6 @@ export default class Shelf extends React.Component {
         </div>
       </div>
     );
-  }
+};
 
-}
+export default Shelf;
